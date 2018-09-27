@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.views import Response
-from bets.models import Match
+from bets.models import Match, RankList
 from django.utils import timezone
-from bets.serializers import MatchesBetListSerializer, MatchesEndedListSerializer
+from bets.serializers import MatchesBetListSerializer, MatchesEndedListSerializer, RankListSerializer
 
 
 class MatchesBetListView(APIView):
@@ -21,4 +21,13 @@ class MatchEndedView(APIView):
     def get(self, request, format=None):
         queryset = Match.objects.filter(match_ended=True)
         serialized_data = MatchesEndedListSerializer(instance=queryset, many=True)
+        return Response(data=serialized_data.data)
+
+
+class RankListView(APIView):
+    """Get all matches for which the bets are possible"""
+
+    def get(self, request, format=None):
+        queryset = RankList.objects.all()
+        serialized_data = RankListSerializer(instance=queryset, many=True)
         return Response(data=serialized_data.data)

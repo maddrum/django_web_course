@@ -37,8 +37,8 @@ class Match(models.Model):
 
 class UserPredictions(models.Model):
     """save user prediction for users"""
-    user = models.ForeignKey(user_model, on_delete=models.CASCADE)
-    match = models.ForeignKey(Match, on_delete=models.CASCADE)
+    user = models.ForeignKey(user_model, on_delete=models.CASCADE, related_name='prediction_user')
+    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name='prediction_match')
     predicted_match_state = models.CharField(choices=choices, max_length=10)
     predicted_goals_home = models.IntegerField(default=0)
     predicted_goals_away = models.IntegerField(default=0)
@@ -62,8 +62,8 @@ class RankList(models.Model):
 
 class MatchComments(models.Model):
     """saves comments about match"""
-    match = models.ForeignKey(Match, on_delete=models.CASCADE)
-    user = models.ForeignKey(user_model)
+    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name='comment_match')
+    user = models.ForeignKey(user_model, on_delete=models.CASCADE, related_name='comment_user')
     comment = models.TextField()
     rating = models.IntegerField(default=0)
 
@@ -87,14 +87,17 @@ def calculate_ranklist(sender, instance, created, *args, **kwargs):
     user_points = {}
     for item in UserPredictions.objects.all():
         if item.user in user_points:
-            user_points[item.user][1] += item.points
+            print(item.match_gained_points)
+            user_points[item.user] += item.match_gained_points
         else:
-            user_points[item.user] = [item.user, 0]
+            user_points[item.user] = 0
+    print(user_points)
     for item in user_points:
         user = user_points[item][0]
         points = user_points[item][1]
-        user_obj = RankList.objects.get_or_create(user=user)
-        user_obj.update(points=points)
+        user_obj = RankList.objects.get_or_create(user=user)[0]
+        user_obj.points = points
+        user_obj.save()
 
 
 def add_user_extra_info(sender, instance, created, *args, **kwargs):
@@ -104,5 +107,29 @@ def add_user_extra_info(sender, instance, created, *args, **kwargs):
         new_user.save()
 
 
+def score_calculator(sender, instance, created, *args, **kwargs):
+    # 1. Calculate points for every user upon saving match result.
+    # check for match_is_over to be true to continue
+    if not instance.match_ended:
+        return
+    queryset = UserPredictions.objects.filter(match=instance)
+    match_goals_home = instance.score_home
+    match_goals_away = instance.score_away
+    match_status = instance.match_status
+
+    for item in queryset:
+        user_prediction_goals_home = item.predicted_goals_home
+        user_prediction_goals_away = item.predicted_goals_away
+        user_prediction_match_state = item.predicted_match_state
+        points = 0
+        if user_prediction_match_state == match_status:
+            points += 3
+        if user_prediction_goals_home == match_goals_home and user_prediction_goals_away == match_goals_away:
+            points += 6
+        item.match_gained_points = points
+        item.save()
+
+
 post_save.connect(calculate_ranklist, sender=Match)
 post_save.connect(add_user_extra_info, sender=user_model)
+post_save.connect(score_calculator, sender=Match)
