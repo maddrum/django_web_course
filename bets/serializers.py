@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from bets.models import Match, RankList, MatchComments
+from django.contrib.auth import get_user_model
 
 
 class MatchesEndedListSerializer(serializers.ModelSerializer):
@@ -26,3 +27,23 @@ class CommentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = MatchComments
         fields = ('match', 'user')
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(max_length=255)
+
+    class Meta:
+        model = get_user_model()
+        fields = ('username', 'email', 'password')
+        extra_kwargs = {
+            'password': {
+                'write_only': True,
+            }
+        }
+
+    def create(self, validated_data):
+        model = get_user_model()
+        new_user = model(username=validated_data['username'], email=validated_data['email'])
+        new_user.set_password(validated_data['password'])
+        new_user.save()
+        return new_user

@@ -1,10 +1,15 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
 from bets import views
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register('register', views.RegisterUser, base_name='register')
+router.register('match/betlist', views.MatchesBetListView, base_name='match_betlist')
+router.register('match/ended', views.MatchEndedView, base_name='match_ended')
+router.register('ranklist', views.RankListView, base_name='ranklist')
 
 app_name = 'bets'
 
 urlpatterns = [
-    url(r'match/betlist/$', views.MatchesBetListView.as_view(), name='match_betlist'),
-    url(r'match/ended/$', views.MatchEndedView.as_view(), name='match_ended'),
-    url(r'ranklist/$', views.RankListView.as_view(), name='ranklist'),
+    url(r'', include(router.urls)),
 ]
