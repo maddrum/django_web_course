@@ -86,16 +86,15 @@ def calculate_ranklist(sender, instance, created, *args, **kwargs):
         return
     user_points = {}
     for item in UserPredictions.objects.all():
+
         if item.user in user_points:
-            print(item.match_gained_points)
             user_points[item.user] += item.match_gained_points
         else:
-            user_points[item.user] = 0
+            user_points[item.user] = item.match_gained_points
     print(user_points)
     for item in user_points:
-        user = user_points[item][0]
-        points = user_points[item][1]
-        user_obj = RankList.objects.get_or_create(user=user)[0]
+        points = user_points[item]
+        user_obj = RankList.objects.get_or_create(user=item)[0]
         user_obj.points = points
         user_obj.save()
 
