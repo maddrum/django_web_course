@@ -15,7 +15,7 @@ class MatchesBetListSerializer(serializers.ModelSerializer):
 
 
 class RankListSerializer(serializers.ModelSerializer):
-    # user1 = serializers.Field(source='user.username')
+    user = serializers.ReadOnlyField(source='user.username')
 
     class Meta:
         model = RankList
