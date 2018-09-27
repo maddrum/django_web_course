@@ -30,11 +30,9 @@ class CommentsSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(max_length=255)
-
     class Meta:
         model = get_user_model()
-        fields = ('username', 'email', 'password')
+        fields = ('username', 'password')
         extra_kwargs = {
             'password': {
                 'write_only': True,
@@ -43,7 +41,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         model = get_user_model()
-        new_user = model(username=validated_data['username'], email=validated_data['email'])
+        new_user = model(username=validated_data['username'])
         new_user.set_password(validated_data['password'])
         new_user.save()
         return new_user
+    
