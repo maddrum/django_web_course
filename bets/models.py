@@ -3,8 +3,9 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
 
-# match status choices
-choices = (('home', 'Home Team Wins'), ('away', 'Guest Team Wins'), ('tie', 'Tie'), ('ns', 'Not started'))
+# match status choices - admin and user choices
+choices_admin = (('home', 'Home Team Wins'), ('away', 'Guest Team Wins'), ('tie', 'Tie'), ('ns', 'Not Started'))
+choices_user = (('home', 'Home Team Wins'), ('away', 'Guest Team Wins'), ('tie', 'Tie'))
 # current_user_model
 user_model = get_user_model()
 
@@ -25,9 +26,9 @@ class Match(models.Model):
     away_team = models.CharField(max_length=255)
     match_start_time = models.DateTimeField()
     match_ended = models.BooleanField(default=False)
-    match_status = models.CharField(choices=choices, max_length=10, default='ns')
-    score_home = models.IntegerField(default=0)
-    score_away = models.IntegerField(default=0)
+    match_status = models.CharField(choices=choices_admin, max_length=10, default='ns')
+    score_home = models.IntegerField(default=-1)
+    score_away = models.IntegerField(default=-1)
     created_on = models.DateField(default=timezone.now)
     edited_on = models.DateField(auto_now=True)
 
@@ -39,7 +40,7 @@ class UserPredictions(models.Model):
     """save user prediction for users"""
     user = models.ForeignKey(user_model, on_delete=models.CASCADE, related_name='prediction_user')
     match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name='prediction_match')
-    predicted_match_state = models.CharField(choices=choices, max_length=10)
+    predicted_match_state = models.CharField(choices=choices_user, max_length=10, default='home')
     predicted_goals_home = models.IntegerField(default=0)
     predicted_goals_away = models.IntegerField(default=0)
     match_gained_points = models.IntegerField(default=0)

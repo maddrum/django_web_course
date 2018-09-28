@@ -3,16 +3,10 @@ from bets.models import Match, RankList, MatchComments
 from django.contrib.auth import get_user_model
 
 
-class MatchesEndedListSerializer(serializers.ModelSerializer):
+class MatchesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Match
-        exclude = ('created_on', 'edited_on', 'match_ended')
-
-
-class MatchesBetListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Match
-        fields = ('id', 'home_team', 'away_team', 'match_start_time')
+        fields = ('id', 'home_team', 'away_team', 'match_start_time', 'score_home', 'score_away')
 
 
 class RankListSerializer(serializers.ModelSerializer):
@@ -21,12 +15,6 @@ class RankListSerializer(serializers.ModelSerializer):
     class Meta:
         model = RankList
         fields = ('user', 'points')
-
-
-class CommentsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MatchComments
-        fields = ('match', 'user')
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -45,4 +33,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
         new_user.set_password(validated_data['password'])
         new_user.save()
         return new_user
-    
+
+
+class CommentsSerializer(serializers.ModelSerializer):
+    user_username = serializers.ReadOnlyField(source='user.username')
+    match_name = serializers.ReadOnlyField(source='match.__str__')
+
+    class Meta:
+        model = MatchComments
+        fields = ('user', 'user_username', 'match', 'match_name', 'comment', 'rating')
