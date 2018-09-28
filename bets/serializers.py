@@ -41,4 +41,4 @@ class CommentsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MatchComments
-        fields = ('user', 'user_username', 'match', 'match_name', 'comment', 'rating')
+        fields = ('id', 'user', 'user_username', 'match', 'match_name', 'comment', 'rating')

@@ -5,6 +5,8 @@ from bets.serializers import MatchesSerializer, RankListSerializer, UserProfileS
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
+from bets.permissions import UpdateOwnObjects
+from rest_framework.authentication import TokenAuthentication
 
 
 class RegisterUser(viewsets.ModelViewSet):
@@ -51,6 +53,8 @@ class RankListView(viewsets.ModelViewSet):
 class Comments(viewsets.ModelViewSet):
     serializer_class = CommentsSerializer
     queryset = MatchComments.objects.all()
+    permission_classes = (UpdateOwnObjects,)
+    authentication_classes = (TokenAuthentication,)
 
     def get_queryset(self):
         match_id = self.request.query_params.get('match_id')
