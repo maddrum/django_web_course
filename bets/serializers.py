@@ -7,6 +7,14 @@ class MatchesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Match
         fields = ('id', 'home_team', 'away_team', 'match_start_time', 'score_home', 'score_away')
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'home_team': {'read_only': True},
+            'away_team': {'read_only': True},
+            'match_start_time': {'read_only': True},
+            'score_home': {'read_only': True},
+            'score_away': {'read_only': True},
+        }
 
 
 class RankListSerializer(serializers.ModelSerializer):

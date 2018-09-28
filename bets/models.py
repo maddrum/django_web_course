@@ -17,7 +17,7 @@ class UserExtraInfo(models.Model):
     favourite_team = models.CharField(max_length=255, default="No favourite team")
 
     def __str__(self):
-        return self.user
+        return str(self.user)
 
 
 class Match(models.Model):
