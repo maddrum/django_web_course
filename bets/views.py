@@ -1,12 +1,12 @@
 from rest_framework import viewsets
-from bets.models import Match, RankList, MatchComments, UserPredictions
+from bets.models import Match, RankList, MatchComments, UserPredictions, UserPrivateNotes
 from django.utils import timezone
 from bets.serializers import MatchesSerializer, RankListSerializer, UserProfileSerializer, CommentsSerializer, \
-    UserPredictionSerializer
+    UserPredictionSerializer, UserPrivateNotesSerializer
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
-from bets.permissions import UpdateOwnObjects
+from bets.permissions import UpdateOwnObjects, UserPrivateData
 from rest_framework.authentication import TokenAuthentication
 
 
@@ -79,3 +79,17 @@ class UserPredictionsView(viewsets.ModelViewSet):
             final_queryset = finished_matches | user_matches_queryset
             return final_queryset
         return finished_matches
+
+
+class UserPrivateNotesView(viewsets.ModelViewSet):
+    """handles user private notes"""
+    serializer_class = UserPrivateNotesSerializer
+    permission_classes = (UserPrivateData,)
+    authentication_classes = (TokenAuthentication,)
+
+    def get_queryset(self):
+        if self.request.user.id is not None:
+            queryset = UserPrivateNotes.objects.filter(user=self.request.user)
+        else:
+            raise PermissionError('No logged in user!')
+        return queryset

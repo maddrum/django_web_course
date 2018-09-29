@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from bets.models import Match, RankList, MatchComments, UserPredictions
+from bets.models import Match, RankList, MatchComments, UserPredictions, UserPrivateNotes
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from bets.helpers import check_correct_user_prediction
@@ -59,6 +59,9 @@ class CommentsSerializer(serializers.ModelSerializer):
 
 
 class UserPredictionSerializer(serializers.ModelSerializer):
+    """a serializer for user predictions
+        Handles create and update process
+        Checks if data entered by user is okay"""
     user_username = serializers.ReadOnlyField(source='user.username')
     match_name = serializers.ReadOnlyField(source='match.__str__')
     match_ended = serializers.ReadOnlyField(source='match.match_ended')
@@ -92,4 +95,18 @@ class UserPredictionSerializer(serializers.ModelSerializer):
         if instance.match.match_start_time < current_time:
             raise serializers.ValidationError(
                 'Too LATE! You could only update if match is not about to start in 30 minutes.')
+        state = check_correct_user_prediction(match_state=instance.predicted_match_state,
+                                              goals_home=instance.predicted_goals_home,
+                                              goals_away=instance.predicted_goals_away)
+        if state['state']:
+            raise serializers.ValidationError(state['error'])
         return super(UserPredictionSerializer, self).update(instance, validated_data)
+
+
+class UserPrivateNotesSerializer(serializers.ModelSerializer):
+    """Handles user private notes"""
+    user_username = serializers.ReadOnlyField(source='users.username')
+
+    class Meta:
+        model = UserPrivateNotes
+        fields = ('id', 'user', 'user_username', 'title', 'content')

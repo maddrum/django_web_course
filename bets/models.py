@@ -10,14 +10,13 @@ choices_user = (('home', 'Home Team Wins'), ('away', 'Guest Team Wins'), ('tie',
 user_model = get_user_model()
 
 
-class UserExtraInfo(models.Model):
-    """adds extra fields for user"""
-    user = models.OneToOneField(user_model, on_delete=models.CASCADE)
-    bio = models.TextField(default='BetMaster!')
-    favourite_team = models.CharField(max_length=255, default="No favourite team")
+class UserPrivateNotes(models.Model):
+    user = models.ForeignKey(user_model, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    content = models.TextField()
 
     def __str__(self):
-        return str(self.user)
+        return str(self.user) + ":" + str(self.title)
 
 
 class Match(models.Model):
@@ -83,6 +82,7 @@ class MatchComments(models.Model):
 
 
 def calculate_ranklist(sender, instance, created, *args, **kwargs):
+    """calculates ranglist after every save of Matches model"""
     if not instance.match_ended:
         return
     user_points = {}
@@ -97,13 +97,6 @@ def calculate_ranklist(sender, instance, created, *args, **kwargs):
         user_obj = RankList.objects.get_or_create(user=item)[0]
         user_obj.points = points
         user_obj.save()
-
-
-def add_user_extra_info(sender, instance, created, *args, **kwargs):
-    """initializes extra info database with default data"""
-    if created:
-        new_user = UserExtraInfo(user=instance)
-        new_user.save()
 
 
 def score_calculator(sender, instance, created, *args, **kwargs):
@@ -130,5 +123,4 @@ def score_calculator(sender, instance, created, *args, **kwargs):
 
 
 post_save.connect(calculate_ranklist, sender=Match)
-post_save.connect(add_user_extra_info, sender=user_model)
 post_save.connect(score_calculator, sender=Match)

@@ -10,6 +10,7 @@ router.register('match', views.MatchesView, base_name='matches')
 router.register('ranklist', views.RankListView, base_name='ranklist')
 router.register('comments', views.CommentsView, base_name='comments')
 router.register('user_predictions', views.UserPredictionsView, base_name='user_predictions')
+router.register('user_notes', views.UserPrivateNotesView, base_name='user_private_notes')
 
 app_name = 'bets'
 
