@@ -8,7 +8,8 @@ router.register('register', views.RegisterUser, base_name='register')
 router.register('login', views.LoginUser, base_name='login')
 router.register('match', views.MatchesView, base_name='matches')
 router.register('ranklist', views.RankListView, base_name='ranklist')
-router.register('comments', views.Comments, base_name='comments')
+router.register('comments', views.CommentsView, base_name='comments')
+router.register('user_predictions', views.UserPredictionsView, base_name='user_predictions')
 
 app_name = 'bets'
 

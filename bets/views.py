@@ -1,7 +1,8 @@
 from rest_framework import viewsets
-from bets.models import Match, RankList, MatchComments
+from bets.models import Match, RankList, MatchComments, UserPredictions
 from django.utils import timezone
-from bets.serializers import MatchesSerializer, RankListSerializer, UserProfileSerializer, CommentsSerializer
+from bets.serializers import MatchesSerializer, RankListSerializer, UserProfileSerializer, CommentsSerializer, \
+    UserPredictionSerializer
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -32,11 +33,11 @@ class MatchesView(viewsets.ModelViewSet):
 
     def get_queryset(self):
         status = self.request.query_params.get('status')
-        start_time = timezone.now() + timezone.timedelta(minutes=30)
+        current_time = timezone.now() + timezone.timedelta(minutes=30)
         queryset = False
         if status:
             if status == 'active':
-                queryset = Match.objects.filter(match_start_time__gt=start_time, match_ended=False)
+                queryset = Match.objects.filter(match_start_time__gt=current_time, match_ended=False)
             elif status == 'finished':
                 queryset = Match.objects.filter(match_ended=True)
         if not queryset:
@@ -50,7 +51,7 @@ class RankListView(viewsets.ModelViewSet):
     serializer_class = RankListSerializer
 
 
-class Comments(viewsets.ModelViewSet):
+class CommentsView(viewsets.ModelViewSet):
     serializer_class = CommentsSerializer
     queryset = MatchComments.objects.all()
     permission_classes = (UpdateOwnObjects,)
@@ -63,3 +64,18 @@ class Comments(viewsets.ModelViewSet):
         else:
             queryset = MatchComments.objects.all()
         return queryset
+
+
+class UserPredictionsView(viewsets.ModelViewSet):
+    serializer_class = UserPredictionSerializer
+    permission_classes = (UpdateOwnObjects,)
+    authentication_classes = (TokenAuthentication,)
+
+    def get_queryset(self):
+        # returns all predictions and unfinished matches predictions for user
+        finished_matches = UserPredictions.objects.filter(match__match_ended=True)
+        if self.request.user.is_authenticated:
+            user_matches_queryset = UserPredictions.objects.filter(user=self.request.user, match__match_ended=False)
+            final_queryset = finished_matches | user_matches_queryset
+            return final_queryset
+        return finished_matches
