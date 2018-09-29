@@ -86,3 +86,10 @@ class UserPredictionSerializer(serializers.ModelSerializer):
         if state['state']:
             raise serializers.ValidationError(state['error'])
         return super(UserPredictionSerializer, self).create(validated_data)
+
+    def update(self, instance, validated_data):
+        current_time = timezone.now() + timezone.timedelta(minutes=30)
+        if instance.match.match_start_time < current_time:
+            raise serializers.ValidationError(
+                'Too LATE! You could only update if match is not about to start in 30 minutes.')
+        return super(UserPredictionSerializer, self).update(instance, validated_data)
