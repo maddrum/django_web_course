@@ -14,6 +14,8 @@ class UserPrivateNotes(models.Model):
     user = models.ForeignKey(user_model, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     content = models.TextField()
+    created_on = models.DateTimeField(default=timezone.now)
+    edited_on = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return str(self.user) + ":" + str(self.title)
@@ -65,17 +67,6 @@ class MatchComments(models.Model):
     match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name='comment_match')
     user = models.ForeignKey(user_model, on_delete=models.CASCADE, related_name='comment_user')
     comment = models.TextField()
-    rating = models.IntegerField(default=0)
-
-    def add_plus(self, instance):
-        """plus 1 rating to a comment"""
-        instance.rating += 1
-        instance.save()
-
-    def add_minus(self, instance):
-        """minus 1 rating to a comment"""
-        instance.rating -= 1
-        instance.save()
 
     def __str__(self):
         return 'comments for ' + str(self.match)

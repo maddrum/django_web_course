@@ -50,18 +50,23 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class CommentsSerializer(serializers.ModelSerializer):
+    user_id = serializers.ReadOnlyField(source='user.id')
     user_username = serializers.ReadOnlyField(source='user.username')
     match_name = serializers.ReadOnlyField(source='match.__str__')
 
     class Meta:
         model = MatchComments
-        fields = ('id', 'user', 'user_username', 'match', 'match_name', 'comment', 'rating')
+        fields = ('id', 'user_id', 'user_username', 'match', 'match_name', 'comment', 'rating')
+        extra_kwargs = {
+            'user': {'read_only': True},
+        }
 
 
 class UserPredictionSerializer(serializers.ModelSerializer):
     """a serializer for user predictions
         Handles create and update process
         Checks if data entered by user is okay"""
+    user_id = serializers.ReadOnlyField(source='user.id')
     user_username = serializers.ReadOnlyField(source='user.username')
     match_name = serializers.ReadOnlyField(source='match.__str__')
     match_ended = serializers.ReadOnlyField(source='match.match_ended')
@@ -71,7 +76,7 @@ class UserPredictionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserPredictions
-        fields = ('id', 'user', 'user_username', 'match', 'match_name', 'match_ended',
+        fields = ('id', 'user_id', 'user_username', 'match', 'match_name', 'match_ended',
                   'match_status', 'match_result_goals_home', 'match_result_goals_away',
                   'predicted_match_state', 'predicted_goals_home', 'predicted_goals_away')
 
@@ -105,8 +110,9 @@ class UserPredictionSerializer(serializers.ModelSerializer):
 
 class UserPrivateNotesSerializer(serializers.ModelSerializer):
     """Handles user private notes"""
+    user_id = serializers.ReadOnlyField(source='user.id')
     user_username = serializers.ReadOnlyField(source='users.username')
 
     class Meta:
         model = UserPrivateNotes
-        fields = ('id', 'user', 'user_username', 'title', 'content')
+        fields = ('id', 'user_id', 'user_username', 'title', 'content')

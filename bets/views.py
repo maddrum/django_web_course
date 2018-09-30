@@ -67,6 +67,11 @@ class CommentsView(viewsets.ModelViewSet):
             queryset = MatchComments.objects.all()
         return queryset
 
+    def perform_create(self, serializer):
+        if self.request.user.id is None:
+            raise PermissionDenied("Not logged-in user")
+        serializer.save(user=self.request.user)
+
 
 class UserPredictionsView(viewsets.ModelViewSet):
     serializer_class = UserPredictionSerializer
