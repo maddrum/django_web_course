@@ -8,6 +8,8 @@ from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
 from bets.permissions import UpdateOwnObjects, UserPrivateData
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 
 
 class RegisterUser(viewsets.ModelViewSet):
@@ -80,16 +82,21 @@ class UserPredictionsView(viewsets.ModelViewSet):
             return final_queryset
         return finished_matches
 
+    def perform_create(self, serializer):
+        if self.request.user.id is None:
+            raise PermissionDenied('No logged-in user!')
+        serializer.save(user=self.request.user)
+
 
 class UserPrivateNotesView(viewsets.ModelViewSet):
     """handles user private notes"""
     serializer_class = UserPrivateNotesSerializer
-    permission_classes = (UserPrivateData,)
+    permission_classes = (IsAuthenticated, UserPrivateData)
     authentication_classes = (TokenAuthentication,)
 
     def get_queryset(self):
-        if self.request.user.id is not None:
-            queryset = UserPrivateNotes.objects.filter(user=self.request.user)
-        else:
-            raise PermissionError('No logged in user!')
+        queryset = UserPrivateNotes.objects.filter(user=self.request.user)
         return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
