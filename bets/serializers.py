@@ -56,7 +56,7 @@ class CommentsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MatchComments
-        fields = ('id', 'user_id', 'user_username', 'match', 'match_name', 'comment', 'rating')
+        fields = ('id', 'user_id', 'user_username', 'match', 'match_name', 'comment',)
         extra_kwargs = {
             'user': {'read_only': True},
         }
