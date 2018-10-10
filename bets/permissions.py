@@ -24,7 +24,7 @@ class UserPrivateData(permissions.BasePermission):
 
 
 class OnlySafeMethods(permissions.BasePermission):
-    """for GET only methods"""
+    """for SAFE only methods"""
 
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:

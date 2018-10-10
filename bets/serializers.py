@@ -25,10 +25,11 @@ class MatchesSerializer(serializers.ModelSerializer):
 
 class RankListSerializer(serializers.ModelSerializer):
     username = serializers.ReadOnlyField(source='user.username')
+    user_id = serializers.ReadOnlyField(source='user.id')
 
     class Meta:
         model = RankList
-        fields = ('username', 'points', 'user')
+        fields = ('username', 'points', 'user_id')
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
