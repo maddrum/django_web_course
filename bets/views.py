@@ -6,7 +6,7 @@ from bets.serializers import MatchesSerializer, RankListSerializer, UserProfileS
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
-from bets.permissions import UpdateOwnObjects, UserPrivateData, OnlySafeMethods
+from bets.permissions import UpdateOwnObjects, UserPrivateData, OnlySafeMethods, RegisterUserPostPermission
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
@@ -16,6 +16,7 @@ class RegisterUser(viewsets.ModelViewSet):
     """register a new user"""
     serializer_class = UserProfileSerializer
     queryset = get_user_model().objects.all()
+    permission_classes = (RegisterUserPostPermission,)
 
 
 class LoginUser(viewsets.ViewSet):
@@ -32,6 +33,7 @@ class MatchesView(viewsets.ModelViewSet):
             active - returns only matches you could bet on
             finished = returns matches that are currently finished"""
     serializer_class = MatchesSerializer
+    permission_classes = (OnlySafeMethods,)
 
     def get_queryset(self):
         status = self.request.query_params.get('status')

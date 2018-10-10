@@ -30,3 +30,12 @@ class OnlySafeMethods(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         return False
+
+
+class RegisterUserPostPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        if request.method == "POST":
+            return True
+        return False

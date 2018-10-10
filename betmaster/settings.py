@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'bets',
+    'rest_framework_swagger',
 ]
 
 MIDDLEWARE = [
