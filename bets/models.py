@@ -74,8 +74,32 @@ class MatchComments(models.Model):
 
 def calculate_ranklist(sender, instance, created, *args, **kwargs):
     """calculates ranglist after every save of Matches model"""
+
+
+def score_calculator(sender, instance, created, *args, **kwargs):
+    # 1. Calculate points for every user upon saving match result.
+    # 2. Updates ranklists
+    # check for match_is_over to be true to continue
     if not instance.match_ended:
         return
+    # calculate score
+    queryset = UserPredictions.objects.filter(match=instance)
+    match_goals_home = instance.score_home
+    match_goals_away = instance.score_away
+    match_status = instance.match_status
+    for item in queryset:
+        user_prediction_goals_home = item.predicted_goals_home
+        user_prediction_goals_away = item.predicted_goals_away
+        user_prediction_match_state = item.predicted_match_state
+        points = 0
+        if user_prediction_match_state == match_status:
+            points += 3
+        if user_prediction_goals_home == match_goals_home and user_prediction_goals_away == match_goals_away:
+            points += 6
+        item.match_gained_points = points
+        item.save()
+
+    # ranklist generator
     user_points = {}
     for item in UserPredictions.objects.all():
 
@@ -90,28 +114,4 @@ def calculate_ranklist(sender, instance, created, *args, **kwargs):
         user_obj.save()
 
 
-def score_calculator(sender, instance, created, *args, **kwargs):
-    # 1. Calculate points for every user upon saving match result.
-    # check for match_is_over to be true to continue
-    if not instance.match_ended:
-        return
-    queryset = UserPredictions.objects.filter(match=instance)
-    match_goals_home = instance.score_home
-    match_goals_away = instance.score_away
-    match_status = instance.match_status
-
-    for item in queryset:
-        user_prediction_goals_home = item.predicted_goals_home
-        user_prediction_goals_away = item.predicted_goals_away
-        user_prediction_match_state = item.predicted_match_state
-        points = 0
-        if user_prediction_match_state == match_status:
-            points += 3
-        if user_prediction_goals_home == match_goals_home and user_prediction_goals_away == match_goals_away:
-            points += 6
-        item.match_gained_points = points
-        item.save()
-
-
-post_save.connect(calculate_ranklist, sender=Match)
 post_save.connect(score_calculator, sender=Match)

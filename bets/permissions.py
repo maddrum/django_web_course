@@ -27,7 +27,6 @@ class OnlySafeMethods(permissions.BasePermission):
     """for GET only methods"""
 
     def has_permission(self, request, view):
-        print('check')
         if request.method in permissions.SAFE_METHODS:
             return True
         return False
