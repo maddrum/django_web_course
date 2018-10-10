@@ -24,11 +24,11 @@ class MatchesSerializer(serializers.ModelSerializer):
 
 
 class RankListSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.username')
+    username = serializers.ReadOnlyField(source='user.username')
 
     class Meta:
         model = RankList
-        fields = ('user', 'points')
+        fields = ('username', 'points', 'user')
 
 
 class UserProfileSerializer(serializers.ModelSerializer):

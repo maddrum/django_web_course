@@ -6,7 +6,7 @@ from bets.serializers import MatchesSerializer, RankListSerializer, UserProfileS
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
-from bets.permissions import UpdateOwnObjects, UserPrivateData
+from bets.permissions import UpdateOwnObjects, UserPrivateData, OnlySafeMethods
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
@@ -51,6 +51,7 @@ class RankListView(viewsets.ModelViewSet):
     """Get all matches for which the bets are possible"""
     queryset = RankList.objects.all()
     serializer_class = RankListSerializer
+    permission_classes = (OnlySafeMethods,)
 
 
 class CommentsView(viewsets.ModelViewSet):

@@ -21,3 +21,13 @@ class UserPrivateData(permissions.BasePermission):
         if request.method == "POST" and request.user.id != obj.user.id:
             raise PermissionDenied("Not Allowed")
         return obj.user.id == request.user.id
+
+
+class OnlySafeMethods(permissions.BasePermission):
+    """for GET only methods"""
+
+    def has_permission(self, request, view):
+        print('check')
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return False
