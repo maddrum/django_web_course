@@ -96,7 +96,6 @@ class UserPredictionsView(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def perform_destroy(self, instance):
-        # TODO Test this
         current_time_plus_30 = timezone.now() + timezone.timedelta(minutes=30)
         if instance.match.match_start_time < current_time_plus_30:
             raise PermissionDenied('You can not delete old predictions!')
