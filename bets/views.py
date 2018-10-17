@@ -95,6 +95,13 @@ class UserPredictionsView(viewsets.ModelViewSet):
             raise PermissionDenied('No logged-in user!')
         serializer.save(user=self.request.user)
 
+    def perform_destroy(self, instance):
+        # TODO Test this
+        current_time_plus_30 = timezone.now() + timezone.timedelta(minutes=30)
+        if instance.match.match_start_time < current_time_plus_30:
+            raise PermissionDenied('You can not delete old predictions!')
+        instance.delete()
+
 
 class UserPrivateNotesView(viewsets.ModelViewSet):
     """handles user private notes"""

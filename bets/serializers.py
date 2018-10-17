@@ -58,9 +58,9 @@ class CommentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = MatchComments
         fields = ('id', 'user_id', 'user_username', 'match', 'match_name', 'comment',)
-        extra_kwargs = {
-            'user': {'read_only': True},
-        }
+        # extra_kwargs = {
+        #     'user': {'read_only': True},
+        # }
 
 
 class UserPredictionSerializer(serializers.ModelSerializer):
@@ -82,12 +82,12 @@ class UserPredictionSerializer(serializers.ModelSerializer):
                   'predicted_match_state', 'predicted_goals_home', 'predicted_goals_away')
 
     def create(self, validated_data):
-        current_time = timezone.now() + timezone.timedelta(minutes=30)
+        current_time_plus_30 = timezone.now() + timezone.timedelta(minutes=30)
         current_user = validated_data['user']
         current_match = validated_data['match']
         if UserPredictions.objects.filter(user=current_user, match=current_match).count() != 0:
             raise serializers.ValidationError('User prediction already in database!')
-        if current_match.match_start_time < current_time:
+        if current_match.match_start_time < current_time_plus_30:
             raise serializers.ValidationError('Too LATE! Match is starting in 30 minutes or less!')
         state = check_correct_user_prediction(match_state=validated_data['predicted_match_state'],
                                               goals_home=validated_data['predicted_goals_home'],
@@ -97,13 +97,14 @@ class UserPredictionSerializer(serializers.ModelSerializer):
         return super(UserPredictionSerializer, self).create(validated_data)
 
     def update(self, instance, validated_data):
-        current_time = timezone.now() + timezone.timedelta(minutes=30)
-        if instance.match.match_start_time < current_time:
+        current_time_plus_30 = timezone.now() + timezone.timedelta(minutes=30)
+        if instance.match.match_start_time < current_time_plus_30:
             raise serializers.ValidationError(
                 'Too LATE! You could only update if match is not about to start in 30 minutes.')
-        state = check_correct_user_prediction(match_state=instance.predicted_match_state,
-                                              goals_home=instance.predicted_goals_home,
-                                              goals_away=instance.predicted_goals_away)
+
+        state = check_correct_user_prediction(match_state=validated_data['predicted_match_state'],
+                                              goals_home=validated_data['predicted_goals_home'],
+                                              goals_away=validated_data['predicted_goals_away'])
         if state['state']:
             raise serializers.ValidationError(state['error'])
         return super(UserPredictionSerializer, self).update(instance, validated_data)
