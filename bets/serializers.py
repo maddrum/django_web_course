@@ -3,6 +3,8 @@ from bets.models import Match, RankList, MatchComments, UserPredictions, UserPri
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from bets.helpers import check_correct_user_prediction
+from rest_framework.status import HTTP_409_CONFLICT
+from .custom_validators import CustomValidation
 
 
 class MatchesSerializer(serializers.ModelSerializer):
@@ -86,27 +88,27 @@ class UserPredictionSerializer(serializers.ModelSerializer):
         current_user = validated_data['user']
         current_match = validated_data['match']
         if UserPredictions.objects.filter(user=current_user, match=current_match).count() != 0:
-            raise serializers.ValidationError('User prediction already in database!')
+            raise CustomValidation('User prediction already in database!', status_code=HTTP_409_CONFLICT)
         if current_match.match_start_time < current_time_plus_30:
-            raise serializers.ValidationError('Too LATE! Match is starting in 30 minutes or less!')
+            raise CustomValidation('Too LATE! Match is starting in 30 minutes or less!', status_code=HTTP_409_CONFLICT)
         state = check_correct_user_prediction(match_state=validated_data['predicted_match_state'],
                                               goals_home=validated_data['predicted_goals_home'],
                                               goals_away=validated_data['predicted_goals_away'])
         if state['state']:
-            raise serializers.ValidationError(state['error'])
+            raise CustomValidation(state['error'], status_code=HTTP_409_CONFLICT)
         return super(UserPredictionSerializer, self).create(validated_data)
 
     def update(self, instance, validated_data):
         current_time_plus_30 = timezone.now() + timezone.timedelta(minutes=30)
         if instance.match.match_start_time < current_time_plus_30:
-            raise serializers.ValidationError(
-                'Too LATE! You could only update if match is not about to start in 30 minutes.')
+            raise CustomValidation('Too LATE! You could only update if match is not about to start in 30 minutes.',
+                                   status_code=HTTP_409_CONFLICT)
 
         state = check_correct_user_prediction(match_state=validated_data['predicted_match_state'],
                                               goals_home=validated_data['predicted_goals_home'],
                                               goals_away=validated_data['predicted_goals_away'])
         if state['state']:
-            raise serializers.ValidationError(state['error'])
+            raise CustomValidation(state['error'], status_code=HTTP_409_CONFLICT)
         return super(UserPredictionSerializer, self).update(instance, validated_data)
 
 

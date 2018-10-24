@@ -10,6 +10,7 @@ from bets.permissions import UpdateOwnObjects, UserPrivateData, OnlySafeMethods,
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.status import HTTP_409_CONFLICT
 
 
 class RegisterUser(viewsets.ModelViewSet):
