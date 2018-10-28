@@ -72,10 +72,6 @@ class MatchComments(models.Model):
         return 'comments for ' + str(self.match)
 
 
-def calculate_ranklist(sender, instance, created, *args, **kwargs):
-    """calculates ranglist after every save of Matches model"""
-
-
 def score_calculator(sender, instance, created, *args, **kwargs):
     # 1. Calculate points for every user upon saving match result.
     # 2. Updates ranklists
